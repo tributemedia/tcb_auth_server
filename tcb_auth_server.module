@@ -1,0 +1,47 @@
+<?php
+/**
+*include drupal api
+*/
+require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
+/**
+ * @file
+ *
+ * Manage users on sites on techcenterboise.com
+ */
+
+/**
+ * Implementation of hook_permission().
+ */
+function tcbusermanagementserver_permission() {
+  return array(
+    'login to managed sites with tech support role',
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function tcbusermanagementserver_menu() {
+  $items = array();
+  $items['tcbusermanagementserver/authenticate_user/%/%'] = array(
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'tcbusermanagementserver_user_authenticate',
+    'page arguments' => array(2, 3),
+  );
+  return $items;
+}
+
+/**
+ * Authenticate the user using the given username and md5 hash and return true
+ * if the user has the proper permission and false if not
+ */
+function tcbusermanagementserver_user_authenticate($username, $pass) {
+  $result = user_authenticate($username, $pass);
+  if ($result) {
+      drupal_json_output(TRUE);
+    }
+    else {
+      drupal_json_output(FALSE);
+    }
+  }
