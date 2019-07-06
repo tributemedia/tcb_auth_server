@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - tcb_auth_server
+name: 'TCB Site'
+vid: tcb_site
+description: 'A TCB client site, with list of valid domains for registration'
+hierarchy: 0
+weight: 0

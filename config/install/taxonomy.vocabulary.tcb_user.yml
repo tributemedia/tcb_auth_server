@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - tcb_auth_server
+name: 'TCB User'
+vid: tcb_user
+description: 'Represents a user in the TCB system.'
+hierarchy: 0
+weight: 0
