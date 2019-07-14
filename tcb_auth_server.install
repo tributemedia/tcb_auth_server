@@ -6,6 +6,9 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Symfony\Component\Yaml\Yaml;
 
+/*
+ * Implements hook_install
+ */
 function tcb_auth_server_install() {
   
   // Since Drupal will not create taxonomy term fields automatically,
@@ -42,6 +45,14 @@ function tcb_auth_server_install() {
         $field->save();
       }
       
+      /*
+       * IMPORTANT:
+       *
+       * Starting in Drupal 8.8, entity_get_display and 
+       * entity_get_form_display functions will be deprecated. These will 
+       * need to be replaced with functionality outlined here:
+       * https://drupal.stackexchange.com/questions/222260/add-content-type-field-programmatically
+       */
       // Assign widget settings for the default form mode.
       entity_get_form_display($yamlField['entity_type'], 
         $yamlField['bundle'], $yamlField['form_mode'])
@@ -60,4 +71,40 @@ function tcb_auth_server_install() {
     }
   }
 
+}
+
+/*
+ * Implements hook_uninstall
+ */
+function tcb_auth_server_uninstall() {
+  
+  // Load the config file so we know what to terms and fields to delete
+  $modulePath = \Drupal::service('module_handler')
+    ->getModule('tcb_auth_server')
+    ->getPath();
+  $modulePath = DRUPAL_ROOT . '/' . $modulePath;
+  $taxFieldsConfigPath = $modulePath . 
+    '/config/custom/tcb_taxonomy_fields_display_config.yml';
+  $file = file_get_contents($taxFieldsConfigPath);
+  
+  if(!empty($file) && $file != FALSE) {
+    $yamlContents = Yaml::parse($file);
+    
+    foreach($yamlContents['fields'] as $yamlField) {
+      
+      // If the field storage and field terms are not empty, then
+      // we need to clean them up by deleting them
+      $field = FieldConfig::loadByName($yamlField['entity_type'], 
+        $yamlField['bundle'], $yamlField['name']);
+      
+      if(!empty($field)) {
+        
+        $field->delete();
+        
+      }
+      
+    }
+    
+  }
+  
 }
