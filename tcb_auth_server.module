@@ -4,46 +4,60 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Symfony\Component\Yaml\Yaml;
 
 function tcb_auth_server_install() {
-  $entityTypeManager = \Drupal::entityTypeManager();
   
-  $fieldStorage = FieldStorageConfig::loadByName('taxonomy_term',
-    'field_tcb_site_valid_domains');
-  $field = FieldConfig::loadByName('taxonomy_term', 'tcb_site',
-    'field_tcb_site_valid_domains');
+  // Since Drupal will not create taxonomy term fields automatically,
+  // this logic handles creating and assigning fields to taxonomy term
+  // displays.
+  // Load the custom taxonomy term field config file
+  $modulePath = \Drupal::service('module_handler')
+    ->getModule('tcb_auth_server')
+    ->getPath();
+  $modulePath = DRUPAL_ROOT . '/' . $modulePath;
+  $taxFieldsConfigPath = $modulePath . 
+    '/config/custom/tcb_taxonomy_fields_display_config.yml';
+  $file = file_get_contents($taxFieldsConfigPath);
   
-  if(empty($field)) {
+  if(!empty($file) && $file != FALSE) {
+    $yamlContents = Yaml::parse($file);
     
-    \Drupal::logger('tcb_auth_server')->notice('Field not empty');
-    
-    $field = FieldConfig::create([
-      'field_storage' => $fieldStorage,
-      'bundle' => 'tcb_site',
-      'label' => 'Valid Domains',
-      'settings' => ['display_summary' => TRUE],
-    ]);
-    $field->save();
-    
-    // Assign widget settings for the default form mode.
-    entity_get_form_display('taxonomy_term', 'tcb_site', 'default')
-      ->setComponent('field_tcb_site_valid_domains', [
-        'type' => 'text_textfield',
-      ])
-    ->save();
-    
-    entity_get_display('taxonomy_term', 'tcb_site', 'default')
-      ->setComponent('field_tcb_site_valid_domains', [
-        'label' => 'Valid Domains',
-        'type' => 'text_default',
-      ])
-    ->save();
-    
-  }
-  else {
-    
-    \Drupal::logger('tcb_auth_server')->notice('Field Empty');
-    
+    foreach($yamlContents['fields'] as $yamlField) {
+      
+      $fieldStorage = FieldStorageConfig::loadByName(
+        $yamlField['entity_type'],
+        $yamlField['name']);
+      $field = FieldConfig::loadByName($yamlField['entity_type'], 
+        $yamlField['bundle'], $yamlField['name']);
+      
+      // Create the field if it doesn't already exist in the database
+      if(empty($field)) {
+        $field = FieldConfig::create([
+          'field_storage' => $fieldStorage,
+          'bundle' => $yamlField['bundle'],
+          'label' => $yamlField['display_label'],
+          'settings' => ['display_summary' => TRUE],
+        ]);
+        $field->save();
+      }
+      
+      // Assign widget settings for the default form mode.
+      entity_get_form_display($yamlField['entity_type'], 
+        $yamlField['bundle'], $yamlField['form_mode'])
+        ->setComponent($yamlField['name'], [
+          'type' => $yamlField['form_type'],
+        ])
+      ->save();
+      
+      entity_get_display($yamlField['entity_type'], $yamlField['bundle'],
+        $yamlField['display_mode'])
+        ->setComponent($yamlField['name'], [
+          'label' => $yamlField['display_label'],
+          'type' => $yamlField['display_type'],
+        ])
+      ->save();
+    }
   }
 
 }
