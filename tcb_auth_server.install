@@ -15,13 +15,7 @@ function tcb_auth_server_install() {
   // this logic handles creating and assigning fields to taxonomy term
   // displays.
   // Load the custom taxonomy term field config file
-  $modulePath = \Drupal::service('module_handler')
-    ->getModule('tcb_auth_server')
-    ->getPath();
-  $modulePath = DRUPAL_ROOT . '/' . $modulePath;
-  $taxFieldsConfigPath = $modulePath . 
-    '/config/custom/tcb_taxonomy_fields_display_config.yml';
-  $file = file_get_contents($taxFieldsConfigPath);
+  $file = getTaxonomyFieldConfig();
   
   if(!empty($file) && $file != FALSE) {
     $yamlContents = Yaml::parse($file);
@@ -78,14 +72,7 @@ function tcb_auth_server_install() {
  */
 function tcb_auth_server_uninstall() {
   
-  // Load the config file so we know what to terms and fields to delete
-  $modulePath = \Drupal::service('module_handler')
-    ->getModule('tcb_auth_server')
-    ->getPath();
-  $modulePath = DRUPAL_ROOT . '/' . $modulePath;
-  $taxFieldsConfigPath = $modulePath . 
-    '/config/custom/tcb_taxonomy_fields_display_config.yml';
-  $file = file_get_contents($taxFieldsConfigPath);
+  $file = getTaxonomyFieldConfig();
   
   if(!empty($file) && $file != FALSE) {
     $yamlContents = Yaml::parse($file);
@@ -106,5 +93,22 @@ function tcb_auth_server_uninstall() {
     }
     
   }
+  
+}
+
+/*
+ * Returns the file contents (in an array) of the taxonomy field config
+ * file in the custom config directory.
+ */
+function getTaxonomyFieldConfig() {
+  
+  $modulePath = \Drupal::service('module_handler')
+    ->getModule('tcb_auth_server')
+    ->getPath();
+  $modulePath = DRUPAL_ROOT . '/' . $modulePath;
+  $taxFieldsConfigPath = $modulePath . 
+    '/config/custom/tcb_taxonomy_fields_display_config.yml';
+  
+  return file_get_contents($taxFieldsConfigPath);
   
 }
