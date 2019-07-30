@@ -8,6 +8,8 @@ use Drupal\Component\Utility\Html;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\tcb_auth_server\Plugin\rest\resource\TCBWebResource;
+use Drupal\tcb_auth_server\Plugin\rest\resource\ResponseField;
 
 /**
  * Provides a resource to query TCB Role taxonomies
@@ -20,7 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
  *   }
  * )
  */
-class TCBRoleResource extends ResourceBase {
+class TCBRoleResource extends TCBWebResource {
   
   /**
    * Serves responses to GET requests to the path specified on the class
@@ -36,7 +38,14 @@ class TCBRoleResource extends ResourceBase {
     // Evaluate term id first, if passed in, as it is the most specific
     // method to search by, and quicker than searching by name
     if(!empty($tid)) {
-      
+      $response = $this->responseTermByID($tid, 
+        [ new ResponseField('name', 'name', 'standard'),
+          new ResponseField('tid', 'tid', 'standard'),
+          new ResponseField('permissions', 
+           'field_tcb_role_permissions', 
+           'field'),
+        ]);
+      /*
       // Load the role by term id, if it exists
       $role = \Drupal::entityTypeManager()
             ->getStorage('taxonomy_term')
@@ -59,7 +68,7 @@ class TCBRoleResource extends ResourceBase {
         $response = ['error' => 'That term id does not exist'];
         
       }
-      
+      */ 
     }
     // Search for the term by name
     else if(!empty($name)) {
