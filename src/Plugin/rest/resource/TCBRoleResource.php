@@ -34,82 +34,25 @@ class TCBRoleResource extends TCBWebResource {
     $name = \Drupal::request()->query->get('name');
     $tid = \Drupal::request()->query->get('tid');
     $response = '';
-    
-    // Evaluate term id first, if passed in, as it is the most specific
-    // method to search by, and quicker than searching by name
-    if(!empty($tid)) {
-      $response = $this->responseTermByID($tid, 
-        [ new ResponseField('name', 'name', 'standard'),
+    $getTermArgs = [ 
+          new ResponseField('name', 'name', 'standard'),
           new ResponseField('tid', 'tid', 'standard'),
           new ResponseField('permissions', 
            'field_tcb_role_permissions', 
            'field'),
-        ]);
-      /*
-      // Load the role by term id, if it exists
-      $role = \Drupal::entityTypeManager()
-            ->getStorage('taxonomy_term')
-            ->load($tid);
+    ];
+    
+    // Evaluate term id first, if passed in, as it is the most specific
+    // method to search by, and quicker than searching by name
+    if(!empty($tid)) {
       
-      // If the term exists, configure the response variable with the
-      // role taxonomy information
-      if(!empty($role)) {
-        
-        $role = $role->toArray();
-        $response = ['name' => $role['name'][0]['value'],
-                    'tid' => $tid,
-                    'permissions' => $role['field_tcb_role_permissions']];
-                    
-      }
-      // Otherwise, inform the consumer that the term for the passed in ID
-      // does not exist
-      else {
-        
-        $response = ['error' => 'That term id does not exist'];
-        
-      }
-      */ 
+      $response = $this->responseTermByID($tid, $getTermArgs);
+      
     }
     // Search for the term by name
     else if(!empty($name)) {
       
-      // Load all of the terms in the tcb_role taxonomy
-      $termId = '';
-      $termPerms = '';
-      $roles =\Drupal::entityTypeManager()
-        ->getStorage('taxonomy_term')
-        ->loadTree('tcb_role');
-        
-      // Loop through each one until the term with the name we're looking
-      // for is found
-      foreach($roles as $role) {
-        
-        if($name == $role->name) {
-          $termId = $role->tid;
-          $termPerms = \Drupal::entityTypeManager()
-            ->getStorage('taxonomy_term')
-            ->load($termId)
-            ->toArray()['field_tcb_role_permissions'];
-          break;
-        }
-        
-      }
-      
-      // If we found the term that was requested, format the response with
-      // the role information to be returned back
-      if(!empty($termId)) {
-        
-        $response = ['name' => $name,
-                    'tid' => $termId,
-                    'permissions' => $termPerms];
-      
-      }
-      // Otherwise inform the user the role name does not exist
-      else {
-        
-        $response = ['error' => 'The role name requested does not exist.'];
-        
-      }
+      $response = $this->responseTermByName($name, 'tcb_role', $getTermArgs);
       
     }
     else {
@@ -118,18 +61,8 @@ class TCBRoleResource extends TCBWebResource {
       
     }
     
-    // This variable, to be added to the resource response, makes sure that
-    // this response is not cached. Caching these responses causes the consumer
-    // to receive the same information as their first API call until the 
-    // server cache is cleared.
-    $nocache = array(
-      '#cache' => array(
-        'max-age' => 0,
-      ),
-    );
+    return $this->returnCacheFreeResponse($response);
     
-    return (new ResourceResponse($response))
-            ->addCacheableDependency($nocache);
   }
   
 }
