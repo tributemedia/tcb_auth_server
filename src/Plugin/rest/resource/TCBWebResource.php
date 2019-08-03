@@ -74,8 +74,10 @@ class TCBWebResource extends ResourceBase {
    */
   protected function responseTermByName($name, $taxonomyName, $fields) {
     
+    $response = [];
+    
     // Make sure required parameters have values
-    if(empty($tid) || empty($fields) || empty($taxonomyName)) {
+    if(empty($name) || empty($fields) || empty($taxonomyName)) {
       
       \Drupal::logger('tcb_auth_server')
         ->error('tid, taxonomyName and fields cannot be empty values.');
@@ -88,7 +90,6 @@ class TCBWebResource extends ResourceBase {
     $terms =\Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
       ->loadTree($taxonomyName);
-    $response = [];
         
     // Loop through each one until the term with the name we're looking
     // for is found

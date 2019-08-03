@@ -4,6 +4,8 @@ namespace Drupal\tcb_auth_server\Plugin\rest\resource;
 
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\tcb_auth_server\Plugin\rest\resource\TCBWebResource;
+use Drupal\tcb_auth_server\Plugin\rest\resource\ResponseField;
 
 /**
  * Provides a resource to query TCB User taxonomies
@@ -16,7 +18,7 @@ use Drupal\rest\ResourceResponse;
  *   }
  * )
  */
-class TCBUserResource extends ResourceBase {
+class TCBUserResource extends TCBWebResource {
   
   /**
    * Serves responses to GET requests to the path specified on the class
@@ -27,39 +29,24 @@ class TCBUserResource extends ResourceBase {
     // Set variables to values set in GET parameters
     $email = \Drupal::request()->query->get('email');
     $tid = \Drupal::request()->query->get('tid');
+    $getTermArgs = [
+      new ResponseField('name', 'name', 'standard'),
+      new ResponseField('tid', 'tid', 'standard'),
+      new ResponseField('email', 'field_tcb_user_email', 'standard'),
+      new ResponseField('user_role', 'field_tcb_user_role', 'entity'),
+    ];
     $response = '';
     
     // Evaluate term id first, if passed in, as it is the most specific
     // method to search by, and quicker than searching by name
     if(!empty($tid)) {
       
-      // Load the role by term id, if it exists
-      $tcbUser = \Drupal::entityTypeManager()
-            ->getStorage('taxonomy_term')
-            ->load($tid);
-      
-      // If the term exists, configure the response variable with the
-      // user taxonomy information
-      if(!empty($tcbUser)) {
-        
-        $tcbUser = $tcbUser->toArray();
-        $response = ['name' => $tcbUser['name'][0]['value'],
-                    'tid' => $tid,
-                    'email' => $tcbUser['field_tcb_user_email'][0]['value'],
-                    'default_role' => 
-                      $tcbUser['field_tcb_user_role'][0]['target_id']];
-                    
-      }
-      // Otherwise, inform the consumer that the term for the passed in ID
-      // does not exist
-      else {
-        
-        $response = ['error' => 'That term id does not exist'];
-        
-      }
+      $response = $this->responseTermById($tid, $getTermArgs);
       
     }
-    // Search for the term by name
+    // Search for the term by email
+    // Special logic is required for this, so this is not using the
+    // inherited search functionality from TCBWebResource
     else if(!empty($email)) {
       
       // Load all of the terms in the tcb_user taxonomy
@@ -92,7 +79,7 @@ class TCBUserResource extends ResourceBase {
         $response = ['name' => $tcbUser['name'][0]['value'],
                     'tid' => $tcbUser['tid'][0]['value'],
                     'email' => $tcbUser['field_tcb_user_email'][0]['value'],
-                    'default_role' => 
+                    'user_role' => 
                       $tcbUser['field_tcb_user_role'][0]['target_id']];
       
       }
@@ -110,18 +97,8 @@ class TCBUserResource extends ResourceBase {
       
     }
     
-    // This variable, to be added to the resource response, makes sure that
-    // this response is not cached. Caching these responses causes the consumer
-    // to receive the same information as their first API call until the 
-    // server cache is cleared.
-    $nocache = array(
-      '#cache' => array(
-        'max-age' => 0,
-      ),
-    );
+    return $this->returnCacheFreeResponse($response);
     
-    return (new ResourceResponse($response))
-            ->addCacheableDependency($nocache);
   }
   
 }
