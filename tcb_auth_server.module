@@ -1,0 +1,51 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\tcb_auth_server\FieldValidatorFactoryType;
+use Drupal\tcb_auth_server\TCBFactoryProvider;
+
+/**
+ * Implements hook_form_alter.
+ * Adds on custom validator on edit forms for taxonomy terms within this
+ * module's vocabularies.
+ */
+function tcb_auth_server_form_alter(&$form, FormStateInterface $formState,
+  $formId) {
+    
+    if($formId == 'taxonomy_term_tcb_user_form' 
+      || $formId == 'taxonomy_term_tcb_role_form'
+      || $formId == 'taxonomy_term_tcb_site_form') {
+      
+      $form['#validate'][] = 'custom_validator';
+      
+    }
+    
+}
+
+/*
+ * Custom validation function that makes sure a field has a unique value. What
+ * field gets checked is based on what form is being edited.
+ */
+function custom_validator($form, FormStateInterface $formState) {
+  
+  $factory = TCBFactoryProvider::getFactory(new FieldValidatorFactoryType());
+  $validator = $factory->create('Simple');
+  $formId = $form['#form_id'];
+  
+  switch($formId) {
+    
+    case 'taxonomy_term_tcb_user_form':
+      $validator->validate('field_tcb_user_email', 'tcb_user', $form, 
+        $formState);
+      break;
+      
+    case 'taxonomy_term_tcb_role_form':
+      $validator->validate('name', 'tcb_role', $form, $formState);
+      break;
+      
+    case 'taxonomy_term_tcb_site_form':
+      $validator->validate('name', 'tcb_site', $form, $formState);
+      break;
+  }
+  
+}
