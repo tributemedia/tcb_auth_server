@@ -5,6 +5,8 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Symfony\Component\Yaml\Yaml;
+use Drupal\user\Entity\Role;
+use Drupal\user\RoleInterface;
 
 /*
  * Implements hook_install
@@ -63,6 +65,20 @@ function tcb_auth_server_install() {
         ])
       ->save();
     }
+  }
+  
+  // Set permissions for the rest resources
+  $roles = [];
+  $roles[] = Role::load('anonymous');
+  $roles[] = Role::load('authenticated');
+  
+  foreach($roles as $role) {
+    
+    $role->grantPermission('restful get tcb_server_role_resource');
+    $role->grantPermission('restful get tcb_server_site_resource');
+    $role->grantPermission('restful get tcb_server_user_resource');
+    $role->save();
+    
   }
 
 }
