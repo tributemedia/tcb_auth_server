@@ -1,0 +1,28 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_tcb_site_default_role
+    - taxonomy.vocabulary.tcb_role
+    - taxonomy.vocabulary.tcb_site
+id: taxonomy_term.tcb_site.field_tcb_site_default_role
+field_name: field_tcb_site_default_role
+entity_type: taxonomy_term
+bundle: tcb_site
+label: 'Default Role'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      tcb_role: tcb_role
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
