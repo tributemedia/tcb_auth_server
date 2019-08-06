@@ -6,6 +6,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\tcb_auth_server\Plugin\rest\resource\TCBWebResource;
 use Drupal\tcb_auth_server\Plugin\rest\resource\ResponseField;
+use Drupal\tcb_auth_server\TCBTermStandardInfoStrategy;
 
 /**
  * Provides a resource to query TCB User taxonomies
@@ -29,19 +30,13 @@ class TCBUserResource extends TCBWebResource {
     // Set variables to values set in GET parameters
     $email = \Drupal::request()->query->get('email');
     $tid = \Drupal::request()->query->get('tid');
-    $getTermArgs = [
-      new ResponseField('name', 'name', 'standard'),
-      new ResponseField('tid', 'tid', 'standard'),
-      new ResponseField('email', 'field_tcb_user_email', 'standard'),
-      new ResponseField('user_role', 'field_tcb_user_role', 'entity'),
-    ];
     $response = '';
     
     // Evaluate term id first, if passed in, as it is the most specific
     // method to search by, and quicker than searching by name
     if(!empty($tid)) {
       
-      $response = $this->responseTermById($tid, $getTermArgs);
+      $response = $this->responseTermById($tid);
       
     }
     // Search for the term by email
@@ -76,11 +71,11 @@ class TCBUserResource extends TCBWebResource {
       // the user information to be returned back
       if(!empty($termId)) {
         
-        $response = ['name' => $tcbUser['name'][0]['value'],
-                    'tid' => $tcbUser['tid'][0]['value'],
-                    'email' => $tcbUser['field_tcb_user_email'][0]['value'],
-                    'user_role' => 
-                      $tcbUser['field_tcb_user_role'][0]['target_id']];
+        $termObj = \Drupal::entityTypeManager()
+            ->getStorage('taxonomy_term')
+            ->load($termId);
+        $termInfoExtractor = new TCBTermStandardInfoStrategy();
+        $response = $termInfoExtractor->getTCBTermInfo($termObj);
       
       }
       // Otherwise inform the user the email does not exist

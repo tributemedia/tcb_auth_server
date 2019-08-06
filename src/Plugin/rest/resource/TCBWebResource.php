@@ -8,6 +8,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\tcb_auth_server\TCBTermStandardInfoStrategy;
 use Drupal\tcb_auth_server\Plugin\rest\resource\ResponseField;
 
 /**
@@ -20,18 +21,17 @@ class TCBWebResource extends ResourceBase {
    * Returns a response variable containing the values of a taxonomy term 
    * that are requested based on the id of the term.
    * @param string $tid The id of the term to query
-   * @param ResponseField[] $fields Array of fields to obtain from term object
    * @return array 
    */
-  protected function responseTermByID($tid, $fields) {
+  protected function responseTermByID($tid) {
     
     $response = [];
     
     // Make sure required parameters have values
-    if(empty($tid) || empty($fields)) {
+    if(empty($tid)) {
       
       \Drupal::logger('tcb_auth_server')
-        ->error('tid and fields cannot be empty values.');
+        ->error('tid cannot be an empty value.');
       
       return $response;
     }
@@ -41,17 +41,12 @@ class TCBWebResource extends ResourceBase {
             ->getStorage('taxonomy_term')
             ->load($tid);
     
-    // If the term was successfully retrieved, add a variable to the
-    // response array for each field value requested to be retrieved
+    // If the term was successfully retrieved, populate the response
+    // variable with the fields to be returned
     if(!empty($term)) {
       
-      foreach($fields as $field) {
-        
-        $response[$field->getName()] = $this->getTermValue($term, 
-            $field->getFieldType(), 
-            $field->getTarget());
-        
-      }
+      $termInfoExtractor = new TCBTermStandardInfoStrategy();
+      $response = $termInfoExtractor->getTCBTermInfo($term);
       
     }
     else {
@@ -69,18 +64,17 @@ class TCBWebResource extends ResourceBase {
    * that are requested based on the name of the term.
    * @param string $name The name of the term to look for
    * @param string $taxonomyName The name of the vocabulary to look through
-   * @param ResponseField[] $fields Array of fields to obtain from term object
    * @return array
    */
-  protected function responseTermByName($name, $taxonomyName, $fields) {
+  protected function responseTermByName($name, $taxonomyName) {
     
     $response = [];
     
     // Make sure required parameters have values
-    if(empty($name) || empty($fields) || empty($taxonomyName)) {
+    if(empty($name) || empty($taxonomyName)) {
       
       \Drupal::logger('tcb_auth_server')
-        ->error('tid, taxonomyName and fields cannot be empty values.');
+        ->error('tid, and taxonomyName cannot be empty values.');
       
       return $response;
     }
@@ -103,14 +97,8 @@ class TCBWebResource extends ResourceBase {
         $termObj = \Drupal::entityTypeManager()
           ->getStorage('taxonomy_term')
           ->load($termId);
-        
-        foreach($fields as $field) {
-          
-          $response[$field->getName()] = $this->getTermValue($termObj, 
-            $field->getFieldType(), 
-            $field->getTarget());
-          
-        }
+        $termInfoExtractor = new TCBTermStandardInfoStrategy();
+        $response = $termInfoExtractor->getTCBTermInfo($termObj);
         
         break;
       }
@@ -120,7 +108,7 @@ class TCBWebResource extends ResourceBase {
     // If we didn't find the term name we were looking for, inform the user
     if(empty($response)) {
         
-      $response = ['error' => 'The role name requested does not exist'];
+      $response = ['error' => 'The name requested does not exist'];
       
     }
       
@@ -154,77 +142,6 @@ class TCBWebResource extends ResourceBase {
     
     return (new ResourceResponse($response))
             ->addCacheableDependency($nocache);
-    
-  }
-  
-  /**
-   * Returns a value within a term based on its type.
-   * The following are valid types:
-   * standard: Retrieves a value from a built-in field (non-custom).
-   * field: Retrieves a value/s from a custom (user defined) field.
-   * entity: Retrieves a value from an entity type reference field.
-   * @param \Drupal\Core\Entity $term The term object
-   * @param string $type The field type, as described above.
-   * @param string $value The name of the field to get a value from.
-   * @return mixed
-   */
-  private function getTermValue($term, $type, $value) {
-    
-    $toReturn = '';
-    
-    // Convert term to term array to make it easier to work with
-    // and verify that the right type of object was passed in.
-    try {
-      
-      $term = $term->toArray();
-      
-    }
-    catch(Exception $e) {
-      
-      \Drupal::logger('tcb_auth_server')
-        ->error('Called toArray on non-term object.');
-      
-    }
-    
-    switch($type) {
-      
-      // Example: $term['name'][0]['value']
-      case 'standard':
-      
-        $toReturn = $term[$value][0]['value'];
-        
-        break;
-      // Example: $role['field_tcb_role_permissions']
-      case 'field':
-        
-        if(is_array($term[$value])) {
-          
-          $toReturn = [];
-          
-          foreach($term[$value] as $fieldValArray) {
-            
-            $toReturn[] = $fieldValArray['value'];
-            
-          }
-          
-        }
-        else {
-          
-          $toReturn = $term[$value];
-        
-        }
-        
-        break;
-      // Example: $tcbUser['field_tcb_user_role'][0]['target_id']
-      case 'entity':
-      
-        $toReturn = $term[$value][0]['target_id'];
-        
-        break;
-      
-    }
-    
-    return $toReturn;
     
   }
   

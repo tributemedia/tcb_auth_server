@@ -31,27 +31,19 @@ class TCBSiteResource extends TCBWebResource {
     // Load parameters
     $tid = \Drupal::request()->query->get('tid');
     $name = \Drupal::request()->query->get('name');
-    $getTermArgs = [
-      new ResponseField('name', 'name', 'standard'),
-      new ResponseField('tid', 'tid', 'standard'),
-      new ResponseField('default_role', 'field_tcb_site_default_role', 
-        'entity'),
-      new ResponseField('valid_domains', 'field_tcb_site_valid_domains', 
-        'field'),
-    ];
     $response = '';
     
     // Check to see if the tid was passed in first, as it will be
     // the fastest operation
     if(!empty($tid)) {
       
-      $response = $this->responseTermById($tid, $getTermArgs);
+      $response = $this->responseTermById($tid);
       
     }
     // Search for the passed in name
     else if(!empty($name)) {
       
-      $response = $this->responseTermByName($name, 'tcb_site', $getTermArgs);
+      $response = $this->responseTermByName($name, 'tcb_site');
       
     }
     else {

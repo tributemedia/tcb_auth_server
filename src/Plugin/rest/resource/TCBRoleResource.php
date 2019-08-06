@@ -10,6 +10,7 @@ use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\tcb_auth_server\Plugin\rest\resource\TCBWebResource;
 use Drupal\tcb_auth_server\Plugin\rest\resource\ResponseField;
+use Drupal\tcb_auth_server\TCBTermStandardInfoStrategy;
 
 /**
  * Provides a resource to query TCB Role taxonomies
@@ -33,26 +34,20 @@ class TCBRoleResource extends TCBWebResource {
     // Set variables to values set in GET parameters
     $name = \Drupal::request()->query->get('name');
     $tid = \Drupal::request()->query->get('tid');
+    $termInfo = new TCBTermStandardInfoStrategy();
     $response = '';
-    $getTermArgs = [ 
-          new ResponseField('name', 'name', 'standard'),
-          new ResponseField('tid', 'tid', 'standard'),
-          new ResponseField('permissions', 
-           'field_tcb_role_permissions', 
-           'field'),
-    ];
     
     // Evaluate term id first, if passed in, as it is the most specific
     // method to search by, and quicker than searching by name
     if(!empty($tid)) {
       
-      $response = $this->responseTermByID($tid, $getTermArgs);
+      $response = $this->responseTermByID($tid);
       
     }
     // Search for the term by name
     else if(!empty($name)) {
       
-      $response = $this->responseTermByName($name, 'tcb_role', $getTermArgs);
+      $response = $this->responseTermByName($name, 'tcb_role');
       
     }
     else {
