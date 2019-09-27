@@ -28,7 +28,16 @@ class CustomFieldValueExtractorStrategy
           
       foreach($term[$fieldName] as $fieldValArray) {
             
-        $toReturn[] = $fieldValArray['value'];
+        if(!empty($fieldValArray['value'])) {
+        
+          $toReturn[] = $fieldValArray['value'];
+          
+        }
+        else {
+          
+          $toReturn[] = $fieldValArray['target_id'];
+          
+        }
             
       }
           

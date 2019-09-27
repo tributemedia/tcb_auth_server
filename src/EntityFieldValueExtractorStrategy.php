@@ -12,15 +12,24 @@ class EntityFieldValueExtractorStrategy
   implements FieldValueExtractorStrategyInterface {
     
   /**
-   * Gets value from an entity reference field on a taxonomy term.
+   * Gets values from an entity reference field on a taxonomy term.
    * @param Drupal\taxonomy\Entity\Term $term The taxonomy term to get values
    * @param string $fieldName The name of the field to extract a value from
-   * @return string
+   * @return array
    */
   public function getValue($term, $fieldName) {
     
-    $term = $term->toArray();
-    return $term[$fieldName][0]['target_id'];
+    $termArr = $term->toArray();
+    $size = count($termArr[$fieldName]);
+    $toReturn = [];
+    
+    for($i = 0; $i < $size; $i++) {
+      
+      $toReturn[] = $termArr[$fieldName][$i]['target_id'];
+      
+    }
+    
+    return $toReturn;
     
   }
 

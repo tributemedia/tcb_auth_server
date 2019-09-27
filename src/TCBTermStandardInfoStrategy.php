@@ -52,13 +52,28 @@ class TCBTermStandardInfoStrategy implements TCBTermInfoStrategyInterface {
       case 'tcb_site':
         $info['default_role'] = $this->entExtractor->getValue($term, 
           'field_tcb_site_default_role');
+        $validRoles = $this->custExtractor->getValue($term,
+          'field_tcb_site_valid_roles');
+        
+        // Grab all valid roles
+        if(!empty($validRoles)) {
+          
+          $info['valid_roles'] = [];
+          
+          foreach($validRoles as $validRole) {
+            
+            $info['valid_roles'][] = $this->getEmbeddedEntityInfo($validRole);
+            
+          }
+          
+        }
           
         if(!empty($info['default_role'])) {
           
           // Instead of only including the TID in the response, include all 
           // of the information that would normally be returned if the client
           // had asked for the info about the role.
-          $embeddedTid = $info['default_role'];
+          $embeddedTid = $info['default_role'][0];
           $info['default_role'] = $this
             ->getEmbeddedEntityInfo($embeddedTid);
           
@@ -80,7 +95,7 @@ class TCBTermStandardInfoStrategy implements TCBTermInfoStrategyInterface {
           // Same as above case, include additional information about the 
           // user role as though the user had asked for it, instead of only
           // returning the tid of the user_role
-          $embeddedTid = $info['user_role'];
+          $embeddedTid = $info['user_role'][0];
           $info['user_role'] = $this->getEmbeddedEntityInfo($embeddedTid);
           
         }
