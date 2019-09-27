@@ -7,6 +7,15 @@ fields:
     display_type: entity_reference_label
     display_label: Default Role
     display_mode: default
+    
+  - name: field_tcb_site_valid_roles
+    entity_type: taxonomy_term
+    bundle: tcb_site
+    form_type: entity_reference_autocomplete
+    form_mode: default
+    display_type: entity_reference_label
+    display_label: Valid Roles
+    display_mode: default
   
   - name: field_tcb_site_valid_domains
     entity_type: taxonomy_term
