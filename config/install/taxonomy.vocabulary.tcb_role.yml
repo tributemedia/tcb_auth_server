@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - tcb_auth_server
+name: 'TCB Role'
+vid: tcb_role
+description: 'A role that a TCB User can have, with a list of permissions.'
+hierarchy: 0
+weight: 0

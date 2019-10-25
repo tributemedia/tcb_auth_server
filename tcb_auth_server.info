@@ -1,7 +1,0 @@
-; $Id$
-name = TCB User Management
-description = Manage users on sites on techcenterboise.com
-core = 7.x
-version=7.x-1.2
-files[]=tcb_auth_server.module
-package=Tech Center Boise

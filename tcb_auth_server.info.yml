@@ -1,0 +1,9 @@
+name: TCB Server Module
+description: Exposes users, roles and domains for use through a REST API.
+package: TCB
+type: module
+core: 8.x
+version: 8.x-1.0-alpha
+dependencies:
+  - drupal:rest
+  - drupal:basic_auth

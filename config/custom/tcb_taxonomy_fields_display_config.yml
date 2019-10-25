@@ -1,0 +1,55 @@
+fields:
+  - name: field_tcb_site_default_role
+    entity_type: taxonomy_term
+    bundle: tcb_site
+    form_type: entity_reference_autocomplete
+    form_mode: default
+    display_type: entity_reference_label
+    display_label: Default Role
+    display_mode: default
+    
+  - name: field_tcb_site_valid_roles
+    entity_type: taxonomy_term
+    bundle: tcb_site
+    form_type: entity_reference_autocomplete
+    form_mode: default
+    display_type: entity_reference_label
+    display_label: Valid Roles
+    display_mode: default
+  
+  - name: field_tcb_site_valid_domains
+    entity_type: taxonomy_term
+    bundle: tcb_site
+    form_type: text_textfield
+    form_mode: default
+    display_type: text_default
+    display_label: Valid Domains
+    display_mode: default
+  
+  - name: field_tcb_role_permissions
+    entity_type: taxonomy_term
+    bundle: tcb_role
+    form_type: text_textfield
+    form_mode: default
+    display_type: text_default
+    display_label: Permissions
+    display_mode: default
+    
+  - name: field_tcb_user_email
+    entity_type: taxonomy_term
+    bundle: tcb_user
+    form_type: email_default
+    form_mode: default
+    display_type: email_mailto
+    display_label: Email
+    display_mode: default
+    
+  - name: field_tcb_user_role
+    entity_type: taxonomy_term
+    bundle: tcb_user
+    form_type: entity_reference_autocomplete
+    form_mode: default
+    display_type: entity_reference_label
+    display_label: User Role
+    display_mode: default
+    

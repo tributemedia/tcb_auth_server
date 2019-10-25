@@ -1,0 +1,10 @@
+id: tcb_server_role_resource
+plugin_id: tcb_server_role_resource
+granularity: method
+configuration:
+  GET:
+    supported_formats:
+      - json
+    supported_auth:
+      - basic_auth
+        

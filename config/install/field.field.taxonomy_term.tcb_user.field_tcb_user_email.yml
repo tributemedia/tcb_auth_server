@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_tcb_user_email
+    - taxonomy.vocabulary.tcb_user
+id: taxonomy_term.tcb_user.field_tcb_user_email
+field_name: field_tcb_user_email
+entity_type: taxonomy_term
+bundle: tcb_user
+label: Email
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: email
